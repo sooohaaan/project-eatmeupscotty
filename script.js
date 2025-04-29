@@ -1,4 +1,4 @@
-const menuItems = [
+let menuItems = [
     "백반", "죽·국수", "중식", "양식", "분식",
     "패스트푸드", "족발·보쌈", "찜·탕", "돈까스·회", "고기구이·도시락"
 ];
@@ -42,6 +42,7 @@ function createRoulette() {
     const svg = document.getElementById('roulette');
     svg.innerHTML = '';
     const cx = 160, cy = 160, r = 150;
+    const sectorAngle = 360 / menuItems.length;
     menuItems.forEach((item, i) => {
         const startAngle = (i * sectorAngle - 90) * Math.PI / 180;
         const endAngle = ((i + 1) * sectorAngle - 90) * Math.PI / 180;
@@ -75,8 +76,9 @@ function createRoulette() {
         text.setAttribute('font-size', '13');
         text.setAttribute('font-weight', 'bold');
         text.setAttribute('fill', '#222');
+        text.setAttribute('class', 'roulette-label');
         text.setAttribute('transform', `rotate(${textAngle},${tx},${ty})`);
-        text.innerHTML = item.replace('·', '\n');
+        text.textContent = item;
         svg.appendChild(text);
     });
 }
@@ -105,9 +107,8 @@ function spinRoulette() {
     const spins = Math.floor(Math.random() * 3) + 5;
     const randomSector = Math.floor(Math.random() * menuItems.length);
 
-    // 당첨 섹터의 중심 각도
+    const sectorAngle = 360 / menuItems.length;
     const targetAngle = (randomSector + 0.5) * sectorAngle - 90;
-    // 12시 방향에 오도록 -90도 추가
     const rotateTo = spins * 360 - targetAngle - 90;
 
     const svg = document.getElementById('roulette');
@@ -116,12 +117,6 @@ function spinRoulette() {
     setTimeout(() => {
         svg.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
         svg.style.transform = `rotate(${rotateTo}deg)`;
-        // 텍스트를 반대로 회전시켜 항상 수평 유지
-        const labels = svg.querySelectorAll('.roulette-label');
-        labels.forEach(label => {
-            label.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
-            label.style.transform = `rotate(${-rotateTo}deg)`;
-        });
     }, 10);
 
     // 효과음 및 진동 애니메이션
@@ -136,12 +131,7 @@ function spinRoulette() {
 
     setTimeout(() => {
         svg.style.transition = 'none';
-        // 텍스트도 transition 해제
-        const labels = svg.querySelectorAll('.roulette-label');
-        labels.forEach(label => {
-            label.style.transition = 'none';
-        });
-        result.innerText = `오늘 추천 메뉴: ${menuItems[randomSector]}`;
+        result.innerText = `${menuItems[randomSector]}`;
         result.style.opacity = 1;
         result.style.transform = 'scale(1)';
         startButton.disabled = false;
@@ -151,4 +141,49 @@ function spinRoulette() {
 startButton.addEventListener('click', spinRoulette);
 
 createRoulette();
-initTickets(); 
+initTickets();
+
+const findBtn = document.getElementById('find-restaurants');
+findBtn.addEventListener('click', function() {
+  findBtn.disabled = true; // 버튼 비활성화
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(success, error);
+  } else {
+    alert('이 브라우저에서는 위치 정보가 지원되지 않습니다.');
+  }
+
+  // 3초 후 버튼 다시 활성화
+  setTimeout(() => {
+    findBtn.disabled = false;
+  }, 3000);
+});
+
+function success(position) {
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+
+  // 카카오 장소 검색 객체 생성
+  const ps = new kakao.maps.services.Places();
+
+  // 음식점 카테고리(FD6), 반경 50m, 최대 8개
+  ps.categorySearch('FD6', function(data, status) {
+    if (status === kakao.maps.services.Status.OK) {
+      const menuList = document.getElementById('roulette-menu');
+      menuList.innerHTML = ''; // 기존 목록 초기화
+
+      // 최대 8개만 표시
+      menuItems = data.slice(0, 8).map(place => place.place_name);
+      createRoulette();
+    } else {
+      alert('주변 식당을 찾을 수 없습니다.');
+    }
+  }, {
+    location: new kakao.maps.LatLng(lat, lng),
+    radius: 50
+  });
+}
+
+function error() {
+  alert('위치 정보를 가져올 수 없습니다.');
+} 

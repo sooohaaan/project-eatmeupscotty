@@ -3,21 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>음식 룰렛</title>
+    <div id="dashboard">
+        <div id="tickets" style="position: static; margin-top: 20px; border-radius: 18px;"></div>
+    </div>
+    <title>Food Roulette</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b09ea72064dc5d8b6cc431cdf78adab5&libraries=services"></script>
 </head>
 <body>
-    <div style="width: 100%; text-align: center; font-size: 48px; font-weight: bold; margin-top: 30px; margin-bottom: 20px; color: #1d1d1f;">Footto!</div>
-    <div id="result"></div>
+    <div style="width: 100%; text-align: center; font-size: 60px; font-weight: bold; margin-top: 30px; margin-bottom: 20px; color: #1d1d1f;">Footto!</div>
+    <div id="menu-title" style="text-align: center; font-size: 22px; font-weight: bold; margin-bottom: 8px;">
+      오늘의 메뉴
+    </div>
+    <div id="result" style="text-align: center; font-size: 20px; min-height: 28px; margin-bottom: 16px;"></div>
+    <div id="roulette-menu" style="display:none"></div>
     <div class="roulette-container" style="position: relative;">
         <svg id="arrow" width="30" height="30" style="position: absolute; left: 50%; top: 0px; transform: translateX(-50%); z-index: 2;" viewBox="0 0 30 30">
             <polygon points="15,30 25,10 5,10" fill="#ff3c26" stroke="#b22" stroke-width="1"/>
         </svg>
         <svg id="roulette" width="320" height="320" viewBox="0 0 320 320"></svg>
     </div>
+    <button id="find-restaurants" style="margin-bottom: 16px;">주변 식당 불러오기</button>
     <button id="start">START</button>
-    <div id="tickets" style="position: static; margin-top: 20px; border-radius: 18px; padding-top: 71px; padding-bottom: 44px;"></div>
     <audio id="tickSound" src="tick.wav" preload="auto"></audio>
     <script src="script.js"></script>
 </body>
