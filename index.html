@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <div id="dashboard">
-        <div id="tickets" style="position: static; margin-top: 20px; border-radius: 18px;"></div>
-    </div>
     <title>Food Roulette</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
@@ -14,7 +11,7 @@
 <body>
     <div style="width: 100%; text-align: center; font-size: 60px; font-weight: bold; margin-top: 30px; margin-bottom: 20px; color: #1d1d1f;">Footto!</div>
     <div id="menu-title" style="text-align: center; font-size: 22px; font-weight: bold; margin-bottom: 8px;">
-      오늘의 메뉴
+      당첨 메뉴
     </div>
     <div id="result" style="text-align: center; font-size: 20px; min-height: 28px; margin-bottom: 16px;"></div>
     <div id="roulette-menu" style="display:none"></div>
@@ -24,8 +21,20 @@
         </svg>
         <svg id="roulette" width="320" height="320" viewBox="0 0 320 320"></svg>
     </div>
-    <button id="find-restaurants" style="margin-bottom: 16px;">주변 식당 불러오기</button>
-    <button id="start">START</button>
+    <div class="button-container">
+        <div id="find-restaurants">불러오기
+            <div class="countdown-container">
+                <div id="countdown"></div>
+            </div>
+        </div>
+        <div id="start">START
+            <div class="tickets-container">
+                <div id="tickets"></div>
+                <div id="total-tickets"></div>
+            </div>
+        </div>
+        <div id="navigate">GO</div>
+    </div>
     <audio id="tickSound" src="tick.wav" preload="auto"></audio>
     <script src="script.js"></script>
 </body>

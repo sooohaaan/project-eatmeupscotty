@@ -28,7 +28,13 @@ function initTickets() {
 }
 
 function updateTicketDisplay() {
-    ticketsDisplay.innerText = `남은 이용권: ${tickets}회`;
+    const totalTickets = 3;
+    const ticketsElement = document.getElementById('tickets');
+    const totalTicketsElement = document.getElementById('total-tickets');
+    
+    ticketsElement.innerText = tickets;
+    totalTicketsElement.innerText = totalTickets;
+    
     if (tickets <= 0) {
         startButton.disabled = true;
         startButton.style.backgroundColor = '#aaa';
@@ -144,19 +150,32 @@ createRoulette();
 initTickets();
 
 const findBtn = document.getElementById('find-restaurants');
+const countdownElement = document.getElementById('countdown');
+countdownElement.textContent = '5'; // 페이지 로드 시 기본값 설정
+
 findBtn.addEventListener('click', function() {
-  findBtn.disabled = true; // 버튼 비활성화
+    findBtn.disabled = true; // 버튼 비활성화
+    let countdown = 5; // 5초 카운트다운
 
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(success, error);
-  } else {
-    alert('이 브라우저에서는 위치 정보가 지원되지 않습니다.');
-  }
+    // 카운트다운 표시
+    countdownElement.textContent = countdown;
 
-  // 3초 후 버튼 다시 활성화
-  setTimeout(() => {
-    findBtn.disabled = false;
-  }, 3000);
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        countdownElement.textContent = countdown;
+        
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            countdownElement.textContent = '5'; // 기본값으로 5 표시
+            findBtn.disabled = false;
+        }
+    }, 1000);
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(success, error);
+    } else {
+        alert('이 브라우저에서는 위치 정보가 지원되지 않습니다.');
+    }
 });
 
 function success(position) {
