@@ -25,6 +25,8 @@ function initTickets() {
         tickets = parseInt(localStorage.getItem('rouletteTickets')) || 3;
     }
     updateTicketDisplay();
+    startButton.disabled = true; // 초기 상태를 비활성화로 설정
+    startButton.style.backgroundColor = '#aaa';
 }
 
 function updateTicketDisplay() {
@@ -137,10 +139,15 @@ function spinRoulette() {
 
     setTimeout(() => {
         svg.style.transition = 'none';
-        result.innerText = `${menuItems[randomSector]}`;
+        selectedRestaurant = menuItems[randomSector]; // 선택된 식당 저장
+        result.innerText = selectedRestaurant;
         result.style.opacity = 1;
         result.style.transform = 'scale(1)';
         startButton.disabled = false;
+        
+        // 식당이 선택되면 navigate 버튼 활성화
+        navigateBtn.disabled = false;
+        navigateBtn.style.backgroundColor = '#2997ff';
     }, 4000);
 }
 
@@ -151,6 +158,15 @@ initTickets();
 
 const findBtn = document.getElementById('find-restaurants');
 const countdownElement = document.getElementById('countdown');
+const navigateBtn = document.getElementById('navigate');
+let selectedRestaurant = null; // 선택된 식당 정보를 저장할 변수
+let currentLat = null; // 현재 위도
+let currentLng = null; // 현재 경도
+
+// navigate 버튼 초기 상태 설정
+navigateBtn.disabled = true;
+navigateBtn.style.backgroundColor = '#aaa';
+
 countdownElement.textContent = '5'; // 페이지 로드 시 기본값 설정
 
 findBtn.addEventListener('click', function() {
@@ -179,13 +195,13 @@ findBtn.addEventListener('click', function() {
 });
 
 function success(position) {
-  const lat = position.coords.latitude;
-  const lng = position.coords.longitude;
+  currentLat = position.coords.latitude;
+  currentLng = position.coords.longitude;
 
   // 카카오 장소 검색 객체 생성
   const ps = new kakao.maps.services.Places();
 
-  // 음식점 카테고리(FD6), 반경 50m, 최대 8개
+  // 음식점 카테고리(FD6), 반경 100m, 최대 8개
   ps.categorySearch('FD6', function(data, status) {
     if (status === kakao.maps.services.Status.OK) {
       const menuList = document.getElementById('roulette-menu');
@@ -194,15 +210,43 @@ function success(position) {
       // 최대 8개만 표시
       menuItems = data.slice(0, 8).map(place => place.place_name);
       createRoulette();
+      
+      // 식당을 성공적으로 불러왔을 때 start 버튼 활성화
+      if (tickets > 0) {
+        startButton.disabled = false;
+        startButton.style.backgroundColor = '#FF4D4D';
+      }
     } else {
       alert('주변 식당을 찾을 수 없습니다.');
     }
   }, {
-    location: new kakao.maps.LatLng(lat, lng),
-    radius: 50
+    location: new kakao.maps.LatLng(currentLat, currentLng),
+    radius: 100
   });
 }
 
 function error() {
   alert('위치 정보를 가져올 수 없습니다.');
-} 
+}
+
+// navigate 버튼 클릭 이벤트 추가
+navigateBtn.addEventListener('click', function() {
+    if (selectedRestaurant && currentLat && currentLng) {
+        // 카카오맵 앱으로 이동하는 URL 생성
+        const appUrl = `kakaomap://look?p=${currentLat},${currentLng}&q=${encodeURIComponent(selectedRestaurant)}`;
+        // 카카오맵 웹 버전 URL 생성
+        const webUrl = `https://map.kakao.com/link/to/${encodeURIComponent(selectedRestaurant)},${currentLat},${currentLng}`;
+        
+        // 앱 실행 시도
+        const startTime = new Date().getTime();
+        window.location.href = appUrl;
+        
+        // 앱이 실행되지 않으면 웹 버전으로 리다이렉트
+        setTimeout(function() {
+            const endTime = new Date().getTime();
+            if (endTime - startTime < 2000) { // 2초 이내에 페이지가 유지되면 앱이 없는 것으로 판단
+                window.location.href = webUrl;
+            }
+        }, 2000);
+    }
+}); 
