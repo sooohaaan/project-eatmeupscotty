@@ -10,9 +10,6 @@
 </head>
 <body>
     <div style="width: 100%; text-align: center; font-size: 60px; font-weight: bold; margin-top: 30px; margin-bottom: 20px; color: #1d1d1f;">Footto!</div>
-    <div id="menu-title" style="text-align: center; font-size: 22px; font-weight: bold; margin-bottom: 8px;">
-        Food Roulette
-    </div>
     <div id="result"></div>
     <div id="roulette-menu" style="display:none"></div>
     <div class="roulette-container" style="position: relative;">
@@ -21,19 +18,21 @@
         </svg>
         <svg id="roulette" width="320" height="320" viewBox="0 0 320 320"></svg>
     </div>
-    <div class="button-container">
-        <div id="find-restaurants">불러오기
+    <div class="buttons-wrapper">
+        <div id="find-restaurants">주변 음식점 불러오기
             <div class="countdown-container">
                 <div id="countdown"></div>
             </div>
         </div>
-        <div id="start">START
-            <div class="tickets-container">
-                <div id="tickets"></div>
-                <div id="total-tickets"></div>
+        <div class="main-buttons">
+            <div id="start">START
+                <div class="tickets-container">
+                    <div id="tickets"></div>
+                    <div id="total-tickets"></div>
+                </div>
             </div>
+            <div id="navigate">GO!</div>
         </div>
-        <div id="navigate">GO</div>
     </div>
     <audio id="tickSound" src="tick.wav" preload="auto"></audio>
     <script src="script.js"></script>

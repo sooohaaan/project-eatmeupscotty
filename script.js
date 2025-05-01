@@ -37,13 +37,12 @@ function updateTicketDisplay() {
     ticketsElement.innerText = tickets;
     totalTicketsElement.innerText = totalTickets;
     
+    // tickets가 0 이하일 때만 비활성화
     if (tickets <= 0) {
         startButton.disabled = true;
         startButton.style.backgroundColor = '#aaa';
-    } else {
-        startButton.disabled = false;
-        startButton.style.backgroundColor = '#FF4D4D';
     }
+    // tickets가 0보다 크더라도 success 함수에서 활성화 여부를 결정
 }
 
 function createRoulette() {
@@ -183,7 +182,7 @@ findBtn.addEventListener('click', function() {
         if (countdown <= 0) {
             clearInterval(countdownInterval);
             countdownElement.textContent = '5'; // 기본값으로 5 표시
-            findBtn.disabled = false;
+            findBtn.disabled = false; // 카운트다운이 끝난 후에만 버튼 활성화
         }
     }, 1000);
 
@@ -191,6 +190,7 @@ findBtn.addEventListener('click', function() {
         navigator.geolocation.getCurrentPosition(success, error);
     } else {
         alert('이 브라우저에서는 위치 정보가 지원되지 않습니다.');
+        findBtn.disabled = false; // 위치 정보를 가져올 수 없는 경우 버튼 활성화
     }
 });
 
@@ -207,8 +207,41 @@ function success(position) {
       const menuList = document.getElementById('roulette-menu');
       menuList.innerHTML = ''; // 기존 목록 초기화
 
-      // 최대 8개만 표시
-      menuItems = data.slice(0, 8).map(place => place.place_name);
+      // 현재 시간 기준으로 영업 중인 식당만 필터링
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const currentTime = currentHour * 60 + currentMinute; // 현재 시간을 분으로 변환
+
+      const openRestaurants = data.filter(place => {
+        // 영업시간 정보가 있는 경우에만 처리
+        if (place.business_hours) {
+          const hours = place.business_hours.split('~');
+          if (hours.length === 2) {
+            const [openTime, closeTime] = hours.map(time => {
+              const [hour, minute] = time.trim().split(':').map(Number);
+              return hour * 60 + (minute || 0);
+            });
+            
+            // 24시간 영업 체크
+            if (openTime === 0 && closeTime === 1440) return true;
+            
+            // 현재 시간이 영업시간 내에 있는지 확인
+            return currentTime >= openTime && currentTime <= closeTime;
+          }
+        }
+        return false; // 영업시간 정보가 없으면 제외
+      });
+
+      // 최대 10개만 표시
+      menuItems = openRestaurants.slice(0, 10).map(place => place.place_name);
+      
+      if (menuItems.length === 0) {
+        alert('현재 영업 중인 식당이 없습니다.');
+        findBtn.disabled = false;
+        return;
+      }
+
       createRoulette();
       
       // 식당을 성공적으로 불러왔을 때 start 버튼 활성화
@@ -218,35 +251,45 @@ function success(position) {
       }
     } else {
       alert('주변 식당을 찾을 수 없습니다.');
+      findBtn.disabled = false;
     }
   }, {
     location: new kakao.maps.LatLng(currentLat, currentLng),
-    radius: 100
+    radius: 100,
+    sort: kakao.maps.services.SortBy.DISTANCE // 거리순 정렬
   });
 }
 
 function error() {
-  alert('위치 정보를 가져올 수 없습니다.');
+    alert('위치 정보를 가져올 수 없습니다.');
+    findBtn.disabled = false; // 위치 정보를 가져올 수 없는 경우 버튼 활성화
 }
 
 // navigate 버튼 클릭 이벤트 추가
 navigateBtn.addEventListener('click', function() {
     if (selectedRestaurant && currentLat && currentLng) {
-        // 카카오맵 앱으로 이동하는 URL 생성
-        const appUrl = `kakaomap://look?p=${currentLat},${currentLng}&q=${encodeURIComponent(selectedRestaurant)}`;
-        // 카카오맵 웹 버전 URL 생성
-        const webUrl = `https://map.kakao.com/link/to/${encodeURIComponent(selectedRestaurant)},${currentLat},${currentLng}`;
-        
-        // 앱 실행 시도
-        const startTime = new Date().getTime();
-        window.location.href = appUrl;
-        
-        // 앱이 실행되지 않으면 웹 버전으로 리다이렉트
-        setTimeout(function() {
-            const endTime = new Date().getTime();
-            if (endTime - startTime < 2000) { // 2초 이내에 페이지가 유지되면 앱이 없는 것으로 판단
-                window.location.href = webUrl;
-            }
-        }, 2000);
+        try {
+            // 카카오맵 앱으로 이동하는 URL 생성 (경로 안내)
+            const appUrl = `kakaomap://route?ep=${encodeURIComponent(selectedRestaurant)}&ep_xy=${currentLng},${currentLat}`;
+            // 카카오맵 웹 버전 URL 생성 (경로 안내)
+            const webUrl = `https://map.kakao.com/link/route/${encodeURIComponent(selectedRestaurant)},${currentLat},${currentLng}`;
+            
+            // 앱 실행 시도
+            const startTime = new Date().getTime();
+            window.location.href = appUrl;
+            
+            // 앱이 실행되지 않으면 웹 버전으로 리다이렉트
+            setTimeout(function() {
+                const endTime = new Date().getTime();
+                if (endTime - startTime < 2000) { // 2초 이내에 페이지가 유지되면 앱이 없는 것으로 판단
+                    window.location.href = webUrl;
+                }
+            }, 2000);
+        } catch (error) {
+            alert('경로 안내를 시작할 수 없습니다. 다시 시도해주세요.');
+            console.error('Navigation error:', error);
+        }
+    } else {
+        alert('위치 정보가 없습니다. 식당을 다시 선택해주세요.');
     }
 }); 
