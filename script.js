@@ -14,6 +14,72 @@ let tickets = 3;
 let lastUpdate = localStorage.getItem('lastUpdatedDate');
 let currentRotation = 0; // 전역 변수로 추가
 
+// 카카오맵 API 초기화
+let map = null;
+let ps = null;
+
+// 공휴일 목록 (2024년)
+const HOLIDAYS_2024 = [
+    '2024-01-01', // 신정
+    '2024-02-09', // 설날
+    '2024-02-10', // 설날
+    '2024-02-11', // 설날
+    '2024-02-12', // 대체공휴일
+    '2024-03-01', // 삼일절
+    '2024-04-10', // 국회의원선거일
+    '2024-05-05', // 어린이날
+    '2024-05-06', // 대체공휴일
+    '2024-05-15', // 부처님오신날
+    '2024-06-06', // 현충일
+    '2024-08-15', // 광복절
+    '2024-09-16', // 추석
+    '2024-09-17', // 추석
+    '2024-09-18', // 추석
+    '2024-10-03', // 개천절
+    '2024-10-09', // 한글날
+    '2024-12-25'  // 성탄절
+];
+
+// 카카오맵 API 초기화 함수
+function initKakaoMap() {
+    // 카카오맵 API가 로드되었는지 확인
+    if (typeof kakao === 'undefined') {
+        console.error('Kakao Map API is not loaded');
+        return false;
+    }
+
+    try {
+        // 지도 초기화
+        const container = document.getElementById('map');
+        if (!container) {
+            console.error('Map container not found');
+            return false;
+        }
+
+        const options = {
+            center: new kakao.maps.LatLng(37.566826, 126.978656), // 서울시청 좌표
+            level: 3
+        };
+        map = new kakao.maps.Map(container, options);
+        
+        // Places 서비스 초기화
+        ps = new kakao.maps.services.Places();
+        return true;
+    } catch (error) {
+        console.error('Failed to initialize Kakao Map:', error);
+        return false;
+    }
+}
+
+// 카카오맵 API 스크립트 로드 완료 후 초기화
+function kakaoMapInit() {
+    if (initKakaoMap()) {
+        console.log('Kakao Map API initialized successfully');
+    } else {
+        alert('카카오맵을 초기화할 수 없습니다. 페이지를 새로고침해주세요.');
+    }
+}
+
 function initTickets() {
     const today = new Date().toISOString().slice(0,10);
     if (lastUpdate !== today) {
@@ -37,12 +103,17 @@ function updateTicketDisplay() {
     ticketsElement.innerText = tickets;
     totalTicketsElement.innerText = totalTickets;
     
-    // tickets가 0 이하일 때만 비활성화
+    // tickets가 0 이하일 때는 항상 비활성화
     if (tickets <= 0) {
         startButton.disabled = true;
         startButton.style.backgroundColor = '#aaa';
     }
-    // tickets가 0보다 크더라도 success 함수에서 활성화 여부를 결정
+    // tickets가 0보다 크더라도 기본적으로는 비활성화 상태 유지
+    // success 함수에서 식당 정보를 성공적으로 불러왔을 때만 활성화
+    else {
+        startButton.disabled = true;
+        startButton.style.backgroundColor = '#aaa';
+    }
 }
 
 function createRoulette() {
@@ -194,75 +265,172 @@ findBtn.addEventListener('click', function() {
     }
 });
 
-function success(position) {
-  currentLat = position.coords.latitude;
-  currentLng = position.coords.longitude;
+// 영업시간 파싱 함수
+function parseBusinessHours(businessHours, currentDay, currentTime) {
+    if (!businessHours) return true;
 
-  // 카카오 장소 검색 객체 생성
-  const ps = new kakao.maps.services.Places();
-
-  // 음식점 카테고리(FD6), 반경 100m, 최대 8개
-  ps.categorySearch('FD6', function(data, status) {
-    if (status === kakao.maps.services.Status.OK) {
-      const menuList = document.getElementById('roulette-menu');
-      menuList.innerHTML = ''; // 기존 목록 초기화
-
-      // 현재 시간 기준으로 영업 중인 식당만 필터링
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-      const currentTime = currentHour * 60 + currentMinute; // 현재 시간을 분으로 변환
-
-      const openRestaurants = data.filter(place => {
-        // 영업시간 정보가 있는 경우에만 처리
-        if (place.business_hours) {
-          const hours = place.business_hours.split('~');
-          if (hours.length === 2) {
-            const [openTime, closeTime] = hours.map(time => {
-              const [hour, minute] = time.trim().split(':').map(Number);
-              return hour * 60 + (minute || 0);
-            });
-            
-            // 24시간 영업 체크
-            if (openTime === 0 && closeTime === 1440) return true;
-            
-            // 현재 시간이 영업시간 내에 있는지 확인
-            return currentTime >= openTime && currentTime <= closeTime;
-          }
-        }
-        return false; // 영업시간 정보가 없으면 제외
-      });
-
-      // 최대 10개만 표시
-      menuItems = openRestaurants.slice(0, 10).map(place => place.place_name);
-      
-      if (menuItems.length === 0) {
-        alert('현재 영업 중인 식당이 없습니다.');
-        findBtn.disabled = false;
-        return;
-      }
-
-      createRoulette();
-      
-      // 식당을 성공적으로 불러왔을 때 start 버튼 활성화
-      if (tickets > 0) {
-        startButton.disabled = false;
-        startButton.style.backgroundColor = '#FF4D4D';
-      }
-    } else {
-      alert('주변 식당을 찾을 수 없습니다.');
-      findBtn.disabled = false;
+    // 휴무일 체크
+    if (businessHours.includes('휴무') || businessHours.includes('정기휴무')) {
+        return false;
     }
-  }, {
-    location: new kakao.maps.LatLng(currentLat, currentLng),
-    radius: 100,
-    sort: kakao.maps.services.SortBy.DISTANCE // 거리순 정렬
-  });
+
+    // 요일별 영업시간 파싱
+    const dayPatterns = {
+        0: ['일', '일요일', '휴무'],
+        1: ['월', '월요일'],
+        2: ['화', '화요일'],
+        3: ['수', '수요일'],
+        4: ['목', '목요일'],
+        5: ['금', '금요일'],
+        6: ['토', '토요일']
+    };
+
+    // 현재 요일에 해당하는 영업시간 찾기
+    const currentDayPatterns = dayPatterns[currentDay];
+    const hasDaySpecificHours = currentDayPatterns.some(pattern => 
+        businessHours.includes(pattern)
+    );
+
+    // 요일별 영업시간이 있는 경우
+    if (hasDaySpecificHours) {
+        const dayHours = businessHours.split(',').find(part => 
+            currentDayPatterns.some(pattern => part.includes(pattern))
+        );
+
+        if (dayHours) {
+            // 휴무 체크
+            if (dayHours.includes('휴무')) return false;
+
+            // 영업시간 파싱
+            const timeMatch = dayHours.match(/(\d{1,2}:\d{2})~(\d{1,2}:\d{2})/);
+            if (timeMatch) {
+                const [_, openTime, closeTime] = timeMatch;
+                const [openHour, openMinute] = openTime.split(':').map(Number);
+                const [closeHour, closeMinute] = closeTime.split(':').map(Number);
+                
+                const openMinutes = openHour * 60 + openMinute;
+                const closeMinutes = closeHour * 60 + closeMinute;
+
+                // 점심시간 휴무 체크
+                if (businessHours.includes('점심시간')) {
+                    const lunchMatch = businessHours.match(/점심시간\s*(\d{1,2}:\d{2})~(\d{1,2}:\d{2})/);
+                    if (lunchMatch) {
+                        const [_, lunchStart, lunchEnd] = lunchMatch;
+                        const [lunchStartHour, lunchStartMinute] = lunchStart.split(':').map(Number);
+                        const [lunchEndHour, lunchEndMinute] = lunchEnd.split(':').map(Number);
+                        
+                        const lunchStartMinutes = lunchStartHour * 60 + lunchStartMinute;
+                        const lunchEndMinutes = lunchEndHour * 60 + lunchEndMinute;
+
+                        // 현재 시간이 점심시간 휴무 시간대인지 확인
+                        if (currentTime >= lunchStartMinutes && currentTime <= lunchEndMinutes) {
+                            return false;
+                        }
+                    }
+                }
+
+                return currentTime >= openMinutes && currentTime <= closeMinutes;
+            }
+        }
+    }
+
+    // 일반 영업시간 파싱 (요일별 정보가 없는 경우)
+    const timeMatch = businessHours.match(/(\d{1,2}:\d{2})~(\d{1,2}:\d{2})/);
+    if (timeMatch) {
+        const [_, openTime, closeTime] = timeMatch;
+        const [openHour, openMinute] = openTime.split(':').map(Number);
+        const [closeHour, closeMinute] = closeTime.split(':').map(Number);
+        
+        const openMinutes = openHour * 60 + openMinute;
+        const closeMinutes = closeHour * 60 + closeMinute;
+
+        // 24시간 영업 체크
+        if (openMinutes === 0 && closeMinutes === 1440) return true;
+
+        return currentTime >= openMinutes && currentTime <= closeMinutes;
+    }
+
+    return true; // 파싱 실패 시 기본적으로 포함
 }
 
-function error() {
-    alert('위치 정보를 가져올 수 없습니다.');
-    findBtn.disabled = false; // 위치 정보를 가져올 수 없는 경우 버튼 활성화
+function success(position) {
+    currentLat = position.coords.latitude;
+    currentLng = position.coords.longitude;
+
+    // Places 서비스가 초기화되지 않은 경우
+    if (!ps) {
+        if (!initKakaoMap()) {
+            alert('카카오맵 서비스를 초기화할 수 없습니다. 페이지를 새로고침해주세요.');
+            findBtn.disabled = false;
+            return;
+        }
+    }
+
+    // 음식점 카테고리(FD6), 반경 100m, 최대 10개
+    ps.categorySearch('FD6', function(data, status) {
+        if (status === kakao.maps.services.Status.OK) {
+            const menuList = document.getElementById('roulette-menu');
+            menuList.innerHTML = ''; // 기존 목록 초기화
+
+            // 현재 시간 기준으로 영업 중인 식당만 필터링
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTime = currentHour * 60 + currentMinute;
+            const currentDay = now.getDay(); // 0: 일요일, 1: 월요일, ..., 6: 토요일
+
+            // 공휴일 체크
+            const today = now.toISOString().split('T')[0];
+            const isHoliday = HOLIDAYS_2024.includes(today);
+
+            const openRestaurants = data.filter(place => {
+                try {
+                    // 공휴일 영업시간 체크
+                    if (isHoliday && place.business_hours) {
+                        if (place.business_hours.includes('공휴일') || place.business_hours.includes('휴무')) {
+                            return false;
+                        }
+                    }
+
+                    return parseBusinessHours(place.business_hours, currentDay, currentTime);
+                } catch (error) {
+                    console.error('영업시간 파싱 오류:', error);
+                    return true; // 파싱 오류 시 기본적으로 포함
+                }
+            });
+
+            // 최대 10개만 표시
+            menuItems = openRestaurants.slice(0, 10).map(place => place.place_name);
+            
+            if (menuItems.length === 0) {
+                alert('현재 영업 중인 식당이 없습니다.');
+                findBtn.disabled = false;
+                return;
+            }
+
+            createRoulette();
+            
+            // 식당을 성공적으로 불러왔을 때 start 버튼 활성화
+            if (tickets > 0) {
+                startButton.disabled = false;
+                startButton.style.backgroundColor = '#FF4D4D';
+            }
+        } else {
+            console.error('Places search failed:', status);
+            alert('주변 식당을 찾을 수 없습니다. 다시 시도해주세요.');
+            findBtn.disabled = false;
+        }
+    }, {
+        location: new kakao.maps.LatLng(currentLat, currentLng),
+        radius: 100,
+        sort: kakao.maps.services.SortBy.DISTANCE
+    });
+}
+
+function error(err) {
+    console.error('Geolocation error:', err);
+    alert('위치 정보를 가져올 수 없습니다. 위치 권한을 확인해주세요.');
+    findBtn.disabled = false;
 }
 
 // navigate 버튼 클릭 이벤트 추가
