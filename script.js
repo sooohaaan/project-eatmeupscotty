@@ -42,26 +42,7 @@ const HOLIDAYS_2024 = [
 
 // 카카오맵 API 초기화 함수
 function initKakaoMap() {
-    // 카카오맵 API가 로드되었는지 확인
-    if (typeof kakao === 'undefined') {
-        console.error('Kakao Map API is not loaded');
-        return false;
-    }
-
     try {
-        // 지도 초기화
-        const container = document.getElementById('map');
-        if (!container) {
-            console.error('Map container not found');
-            return false;
-        }
-
-        const options = {
-            center: new kakao.maps.LatLng(37.566826, 126.978656), // 서울시청 좌표
-            level: 3
-        };
-        map = new kakao.maps.Map(container, options);
-        
         // Places 서비스 초기화
         ps = new kakao.maps.services.Places();
         return true;
@@ -73,10 +54,17 @@ function initKakaoMap() {
 
 // 카카오맵 API 스크립트 로드 완료 후 초기화
 function kakaoMapInit() {
+    if (typeof kakao === 'undefined') {
+        console.error('Kakao Map API is not loaded');
+        return false;
+    }
+
     if (initKakaoMap()) {
         console.log('Kakao Map API initialized successfully');
+        return true;
     } else {
-        alert('카카오맵을 초기화할 수 없습니다. 페이지를 새로고침해주세요.');
+        console.error('Failed to initialize Kakao Map');
+        return false;
     }
 }
 
@@ -359,7 +347,7 @@ function success(position) {
 
     // Places 서비스가 초기화되지 않은 경우
     if (!ps) {
-        if (!initKakaoMap()) {
+        if (!kakaoMapInit()) {
             alert('카카오맵 서비스를 초기화할 수 없습니다. 페이지를 새로고침해주세요.');
             findBtn.disabled = false;
             return;
