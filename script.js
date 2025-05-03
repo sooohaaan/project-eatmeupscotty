@@ -344,10 +344,15 @@ function parseBusinessHours(businessHours, currentDay, currentTime) {
 function success(position) {
     currentLat = position.coords.latitude;
     currentLng = position.coords.longitude;
+    console.log('Current location:', currentLat, currentLng);
 
     // Places 서비스가 초기화되지 않은 경우
     if (!ps) {
-        if (!kakaoMapInit()) {
+        try {
+            ps = new kakao.maps.services.Places();
+            console.log('Places service initialized');
+        } catch (error) {
+            console.error('Failed to initialize Places service:', error);
             alert('카카오맵 서비스를 초기화할 수 없습니다. 페이지를 새로고침해주세요.');
             findBtn.disabled = false;
             return;
@@ -355,7 +360,17 @@ function success(position) {
     }
 
     // 음식점 카테고리(FD6), 반경 100m, 최대 10개
+    const searchOptions = {
+        location: new kakao.maps.LatLng(currentLat, currentLng),
+        radius: 100,
+        sort: kakao.maps.services.SortBy.DISTANCE
+    };
+    console.log('Search options:', searchOptions);
+
     ps.categorySearch('FD6', function(data, status) {
+        console.log('Search status:', status);
+        console.log('Search results:', data);
+
         if (status === kakao.maps.services.Status.OK) {
             const menuList = document.getElementById('roulette-menu');
             menuList.innerHTML = ''; // 기존 목록 초기화
@@ -387,6 +402,8 @@ function success(position) {
                 }
             });
 
+            console.log('Open restaurants:', openRestaurants);
+
             // 최대 10개만 표시
             menuItems = openRestaurants.slice(0, 10).map(place => place.place_name);
             
@@ -405,14 +422,16 @@ function success(position) {
             }
         } else {
             console.error('Places search failed:', status);
-            alert('주변 식당을 찾을 수 없습니다. 다시 시도해주세요.');
+            if (status === kakao.maps.services.Status.ZERO_RESULT) {
+                alert('주변에 식당이 없습니다.');
+            } else if (status === kakao.maps.services.Status.ERROR) {
+                alert('검색 중 오류가 발생했습니다. 다시 시도해주세요.');
+            } else {
+                alert('주변 식당을 찾을 수 없습니다. 다시 시도해주세요.');
+            }
             findBtn.disabled = false;
         }
-    }, {
-        location: new kakao.maps.LatLng(currentLat, currentLng),
-        radius: 100,
-        sort: kakao.maps.services.SortBy.DISTANCE
-    });
+    }, searchOptions);
 }
 
 function error(err) {
