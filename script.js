@@ -1,7 +1,5 @@
-let menuItems = [
-    "백반", "죽·국수", "중식", "양식", "분식",
-    "패스트푸드", "족발·보쌈", "찜·탕", "돈까스·회", "고기구이·도시락"
-];
+let menuItems = [];
+const DEFAULT_SECTOR_COUNT = 10;
 
 const sectorAngle = 360 / menuItems.length;
 const roulette = document.getElementById('roulette');
@@ -104,12 +102,21 @@ function updateTicketDisplay() {
     }
 }
 
+function updateStartButtonState() {
+    if (tickets > 0 && menuItems && menuItems.length > 0 && !isSpinning) {
+        startButton.disabled = false;
+    } else {
+        startButton.disabled = true;
+    }
+}
+
 function createRoulette() {
     const svg = document.getElementById('roulette');
     svg.innerHTML = '';
     const cx = 160, cy = 160, r = 150;
-    const sectorAngle = 360 / menuItems.length;
-    menuItems.forEach((item, i) => {
+    const items = (menuItems && menuItems.length > 0) ? menuItems : Array(DEFAULT_SECTOR_COUNT).fill('');
+    const sectorAngle = 360 / items.length;
+    items.forEach((item, i) => {
         const startAngle = (i * sectorAngle - 90) * Math.PI / 180;
         const endAngle = ((i + 1) * sectorAngle - 90) * Math.PI / 180;
         const x1 = cx + r * Math.cos(startAngle);
@@ -164,14 +171,19 @@ function spinRoulette() {
         alert("오늘의 이용권을 모두 사용했습니다!");
         return;
     }
+    if (!menuItems || menuItems.length === 0) {
+        alert("음식점 목록이 없습니다. 먼저 음식점을 불러와주세요.");
+        return;
+    }
     if (isSpinning) return; // 이미 회전 중이면 무시
     isSpinning = true;
-    startButton.disabled = true;
-    
+    updateStartButtonState();
+
     // 티켓 차감 및 표시
     tickets--;
     localStorage.setItem('rouletteTickets', tickets);
     updateTicketDisplay();
+    updateStartButtonState(); // 티켓 차감 후 상태 갱신
     
     // result 영역 초기화
     result.innerText = '';
@@ -207,10 +219,7 @@ function spinRoulette() {
         result.innerText = selectedRestaurant;
         
         isSpinning = false;
-        // 세 조건 모두 만족할 때만 start 버튼 활성화
-        if (tickets > 0 && menuItems.length > 0 && !isSpinning) {
-            startButton.disabled = false;
-        }
+        updateStartButtonState();
         
         // 식당이 선택되면 navigate 버튼 활성화
         navigateBtn.disabled = false;
@@ -375,7 +384,8 @@ function success(position) {
             console.error('Failed to initialize Places service:', error);
             alert('카카오맵 서비스를 초기화할 수 없습니다. 페이지를 새로고침해주세요.');
             menuItems = [];
-            startButton.disabled = true;
+            createRoulette();
+            updateStartButtonState();
             return;
         }
     }
@@ -431,17 +441,13 @@ function success(position) {
             if (menuItems.length === 0) {
                 alert('현재 영업 중인 식당이 없습니다.');
                 menuItems = [];
-                startButton.disabled = true;  // 식당이 없을 때 start 버튼 비활성화
-                startButton.style.backgroundColor = '#aaa';
+                createRoulette();
+                updateStartButtonState();
                 return;
             }
 
             createRoulette();
-            
-            // 세 조건 모두 만족할 때만 start 버튼 활성화
-            if (tickets > 0 && menuItems.length > 0 && !isSpinning) {
-                startButton.disabled = false;
-            }
+            updateStartButtonState();
         } else {
             console.error('Places search failed:', status);
             if (status === kakao.maps.services.Status.ZERO_RESULT) {
@@ -452,8 +458,8 @@ function success(position) {
                 alert('주변 식당을 찾을 수 없습니다. 다시 시도해주세요.');
             }
             menuItems = [];
-            startButton.disabled = true;  // 검색 실패 시 start 버튼 비활성화
-            startButton.style.backgroundColor = '#aaa';
+            createRoulette();
+            updateStartButtonState();
         }
     }, searchOptions);
 }
@@ -488,6 +494,6 @@ navigateBtn.addEventListener('click', function() {
             console.error('Navigation error:', error);
         }
     } else {
-        alert('위치 정보가 없습니다. 식당을 다시 선택해주세요.');
+        alert('위치 정보가 없습니다. 식당을 선택해주세요.');
     }
 }); 
