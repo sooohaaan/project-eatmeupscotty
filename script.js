@@ -151,9 +151,9 @@ function createRoulette() {
         text.setAttribute('y', ty);
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
-        text.setAttribute('font-size', '13');
+        text.setAttribute('font-size', '12');
         text.setAttribute('font-weight', 'bold');
-        text.setAttribute('fill', '#222');
+        text.setAttribute('fill', 'rgb(54, 54, 54)');
         text.setAttribute('class', 'roulette-label');
         text.setAttribute('transform', `rotate(${textAngle},${tx},${ty})`);
         text.textContent = item;
