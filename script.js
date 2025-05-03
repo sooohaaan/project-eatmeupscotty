@@ -167,8 +167,9 @@ function spinRoulette() {
     localStorage.setItem('rouletteTickets', tickets);
     updateTicketDisplay();
     startButton.disabled = true;
-    result.style.opacity = 0;
-    result.style.transform = 'scale(0.8)';
+    
+    // result 영역 초기화
+    result.innerText = '';
 
     const spins = Math.floor(Math.random() * 3) + 5;
     const randomSector = Math.floor(Math.random() * menuItems.length);
@@ -199,8 +200,7 @@ function spinRoulette() {
         svg.style.transition = 'none';
         selectedRestaurant = menuItems[randomSector]; // 선택된 식당 저장
         result.innerText = selectedRestaurant;
-        result.style.opacity = 1;
-        result.style.transform = 'scale(1)';
+        
         startButton.disabled = false;
         
         // 식당이 선택되면 navigate 버튼 활성화
@@ -228,10 +228,9 @@ navigateBtn.style.backgroundColor = '#aaa';
 countdownElement.textContent = '5'; // 페이지 로드 시 기본값 설정
 
 findBtn.addEventListener('click', function() {
-    findBtn.disabled = true; // 버튼 비활성화
-    let countdown = 5; // 5초 카운트다운
+    findBtn.disabled = true;
+    let countdown = 5;
 
-    // 카운트다운 표시
     countdownElement.textContent = countdown;
 
     const countdownInterval = setInterval(() => {
@@ -240,8 +239,8 @@ findBtn.addEventListener('click', function() {
         
         if (countdown <= 0) {
             clearInterval(countdownInterval);
-            countdownElement.textContent = '5'; // 기본값으로 5 표시
-            findBtn.disabled = false; // 카운트다운이 끝난 후에만 버튼 활성화
+            countdownElement.textContent = '5';
+            findBtn.disabled = false;
         }
     }, 1000);
 
@@ -249,7 +248,7 @@ findBtn.addEventListener('click', function() {
         navigator.geolocation.getCurrentPosition(success, error);
     } else {
         alert('이 브라우저에서는 위치 정보가 지원되지 않습니다.');
-        findBtn.disabled = false; // 위치 정보를 가져올 수 없는 경우 버튼 활성화
+        findBtn.disabled = false;
     }
 });
 
@@ -410,12 +409,14 @@ function success(position) {
             if (menuItems.length === 0) {
                 alert('현재 영업 중인 식당이 없습니다.');
                 findBtn.disabled = false;
+                startButton.disabled = true;  // 식당이 없을 때 start 버튼 비활성화
+                startButton.style.backgroundColor = '#aaa';
                 return;
             }
 
             createRoulette();
             
-            // 식당을 성공적으로 불러왔을 때 start 버튼 활성화
+            // 식당을 성공적으로 불러왔을 때만 start 버튼 활성화
             if (tickets > 0) {
                 startButton.disabled = false;
                 startButton.style.backgroundColor = '#FF4D4D';
@@ -430,6 +431,8 @@ function success(position) {
                 alert('주변 식당을 찾을 수 없습니다. 다시 시도해주세요.');
             }
             findBtn.disabled = false;
+            startButton.disabled = true;  // 검색 실패 시 start 버튼 비활성화
+            startButton.style.backgroundColor = '#aaa';
         }
     }, searchOptions);
 }
