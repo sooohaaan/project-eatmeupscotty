@@ -24,7 +24,7 @@ body {
     position: relative;
     height: 320px;
     border-radius: 22px;
-    border: 1px solid rgba(214, 214, 214, 0.5);
+    border: 1px solid #d6d6d680;
     background-color: #f5f5f7;
 }
 
@@ -102,7 +102,7 @@ body {
 }
 
 #start:disabled {
-    background-color: rgb(170, 170, 170);
+    background-color: #aaaaaa;
     cursor: not-allowed;
 }
 
@@ -111,17 +111,17 @@ body {
 }
 
 #navigate {
-    background-color: rgb(71, 204, 18);
+    background-color: #47cc12;
     height: 100%;
 }
 
 #navigate:disabled {
-    background-color: rgb(170, 170, 170);
+    background-color: #aaaaaa;
     cursor: not-allowed;
 }
 
 #navigate:hover:enabled {
-    background-color: rgb(118, 255, 63);
+    background-color: #76ff3f;
 }
 
 .countdown-container,

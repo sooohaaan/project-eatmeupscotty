@@ -132,8 +132,8 @@ function createRoulette() {
         path.setAttribute('d',
             `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc} 1 ${x2},${y2} Z`
         );
-        path.setAttribute('fill', i % 2 === 0 ? '#fefefe' : '#f0f0f0');
-        path.setAttribute('stroke', '#ddd');
+        path.setAttribute('fill', i % 2 === 0 ? '#f5f5f7' : '#f0f0f0');
+        path.setAttribute('stroke', '#d6d6d680');
         path.setAttribute('stroke-width', '1');
         svg.appendChild(path);
 
@@ -225,7 +225,7 @@ function spinRoulette() {
         
         // 식당이 선택되면 navigate 버튼 활성화
         navigateBtn.disabled = false;
-        navigateBtn.style.backgroundColor = '#2997ff';
+        navigateBtn.style.backgroundColor = '#47cc12';
     }, 4000);
 }
 
