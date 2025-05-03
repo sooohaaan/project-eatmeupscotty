@@ -471,12 +471,12 @@ function error(err) {
 
 // navigate 버튼 클릭 이벤트 추가
 navigateBtn.addEventListener('click', function() {
-    if (selectedRestaurant && currentLat && currentLng) {
+    if (selectedRestaurant) {
         try {
-            // 카카오맵 앱으로 이동하는 URL 생성 (경로 안내)
-            const appUrl = `kakaomap://route?ep=${encodeURIComponent(selectedRestaurant)}&ep_xy=${currentLng},${currentLat}`;
-            // 카카오맵 웹 버전 URL 생성 (경로 안내)
-            const webUrl = `https://map.kakao.com/link/route/${encodeURIComponent(selectedRestaurant)},${currentLat},${currentLng}`;
+            // 카카오맵 앱에서 식당명 검색
+            const appUrl = `kakaomap://search?q=${encodeURIComponent(selectedRestaurant)}`;
+            // 카카오맵 웹 버전 URL
+            const webUrl = `https://map.kakao.com/?q=${encodeURIComponent(selectedRestaurant)}`;
             
             // 앱 실행 시도
             const startTime = new Date().getTime();
@@ -485,7 +485,7 @@ navigateBtn.addEventListener('click', function() {
             // 앱이 실행되지 않으면 웹 버전으로 리다이렉트
             setTimeout(function() {
                 const endTime = new Date().getTime();
-                if (endTime - startTime < 2000) { // 2초 이내에 페이지가 유지되면 앱이 없는 것으로 판단
+                if (endTime - startTime < 2000) {
                     window.location.href = webUrl;
                 }
             }, 2000);
