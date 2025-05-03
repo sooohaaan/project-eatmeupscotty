@@ -114,7 +114,9 @@ function createRoulette() {
     const svg = document.getElementById('roulette');
     svg.innerHTML = '';
     const cx = 160, cy = 160, r = 150;
-    const items = (menuItems && menuItems.length > 0) ? menuItems : Array(DEFAULT_SECTOR_COUNT).fill('');
+    const items = (menuItems && menuItems.length > 0)
+        ? menuItems.map(item => item.name)
+        : Array(DEFAULT_SECTOR_COUNT).fill('');
     const sectorAngle = 360 / items.length;
     items.forEach((item, i) => {
         const startAngle = (i * sectorAngle - 90) * Math.PI / 180;
@@ -215,8 +217,8 @@ function spinRoulette() {
 
     setTimeout(() => {
         svg.style.transition = 'none';
-        selectedRestaurant = menuItems[randomSector]; // 선택된 식당 저장
-        result.innerText = selectedRestaurant;
+        selectedRestaurant = menuItems[randomSector]; // 선택된 식당 객체 저장
+        result.innerText = selectedRestaurant.name;
         
         isSpinning = false;
         updateStartButtonState();
@@ -235,7 +237,7 @@ initTickets();
 const findBtn = document.getElementById('find-restaurants');
 const countdownElement = document.getElementById('countdown');
 const navigateBtn = document.getElementById('navigate');
-let selectedRestaurant = null; // 선택된 식당 정보를 저장할 변수
+let selectedRestaurant = null;
 let currentLat = null; // 현재 위도
 let currentLng = null; // 현재 경도
 
@@ -435,8 +437,12 @@ function success(position) {
 
             console.log('Open restaurants:', openRestaurants);
 
-            // 최대 10개만 표시
-            menuItems = openRestaurants.slice(0, 10).map(place => place.place_name);
+            // 최대 10개만 표시, name/lat/lng 객체로 저장
+            menuItems = openRestaurants.slice(0, 10).map(place => ({
+                name: place.place_name,
+                lat: place.y,
+                lng: place.x
+            }));
             
             if (menuItems.length === 0) {
                 alert('현재 영업 중인 식당이 없습니다.');
@@ -471,12 +477,12 @@ function error(err) {
 
 // navigate 버튼 클릭 이벤트 추가
 navigateBtn.addEventListener('click', function() {
-    if (selectedRestaurant) {
+    if (selectedRestaurant && selectedRestaurant.lat && selectedRestaurant.lng) {
         try {
-            // 카카오맵 앱에서 식당명 검색
-            const appUrl = `kakaomap://search?q=${encodeURIComponent(selectedRestaurant)}`;
+            // 카카오맵 앱에서 경로 안내
+            const appUrl = `kakaomap://route?sp=내위치&ep=${selectedRestaurant.lat},${selectedRestaurant.lng}&by=FOOT`;
             // 카카오맵 웹 버전 URL
-            const webUrl = `https://map.kakao.com/?q=${encodeURIComponent(selectedRestaurant)}`;
+            const webUrl = `https://map.kakao.com/?sName=내위치&eName=${encodeURIComponent(selectedRestaurant.name)}&eX=${selectedRestaurant.lng}&eY=${selectedRestaurant.lat}`;
             
             // 앱 실행 시도
             const startTime = new Date().getTime();
