@@ -12,28 +12,32 @@
     </script>
 </head>
 <body>
-    <div style="width: 100%; text-align: center; font-size: 50px; font-weight: bold; margin-top: 18px; margin-bottom: 18px; color: #1d1d1f;">Footto!</div>
-    <div id="result"></div>
+    <div style="width: 100%; text-align: center; font-size: 40px; font-weight: bold; margin-top: 10px; margin-bottom: 10px; color: #1d1d1f;">Footto!</div>
+    <div class="result-wrapper">
+        <div id="result"></div>
+    </div>
     <div id="roulette-menu" style="display:none"></div>
     <div class="roulette-container" style="position: relative;">
         <svg id="arrow" width="30" height="30" style="position: absolute; left: 50%; top: 0px; transform: translateX(-50%); z-index: 2;" viewBox="0 0 30 30">
-            <polygon points="15,30 25,10 5,10" fill="#ff3c26" stroke="#b22" stroke-width="1"/>
+            <polygon points="15,30 25,10 5,10" fill="rgb(54, 54, 54);" stroke="rgba(214, 214, 214, 0.5);" stroke-width="1"/>
         </svg>
         <svg id="roulette" width="320" height="320" viewBox="0 0 320 320"></svg>
     </div>
     <div class="buttons-wrapper">
-        <div id="find-restaurants">음식점 불러오기
+        <div class="button-container">
             <div class="countdown-container">
                 <div id="countdown"></div>
             </div>
+            <div id="find-restaurants">음식점 불러오기</div>
         </div>
-        <div class="main-buttons">
-            <div id="start">START
-                <div class="tickets-container">
-                    <div id="tickets"></div>
-                    <div id="total-tickets"></div>
-                </div>
+        <div class="button-container">
+            <div class="tickets-container">
+                <div id="tickets"></div>
+                <div id="total-tickets"></div>
             </div>
+            <div id="start">START</div>
+        </div>
+        <div class="button-container">
             <div id="navigate">GO!</div>
         </div>
     </div>
