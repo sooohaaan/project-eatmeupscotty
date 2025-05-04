@@ -528,4 +528,10 @@ navigateBtn.addEventListener('click', function() {
     } else {
         alert('위치 정보가 없습니다. 식당을 선택해주세요.');
     }
-}); 
+});
+
+window.kakaoMapAppInit = function() {
+    createRoulette();
+    initTickets();
+    // 기타 필요한 초기화 코드가 있다면 여기에 추가
+}; 
