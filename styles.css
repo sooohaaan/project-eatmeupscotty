@@ -48,8 +48,8 @@ body {
     align-items: center;
     width: calc(33.333% - 2.667px);
     min-width: 80px;
-    height: 80px;
-    cursor: pointer;
+    height: 140px;
+    cursor: default;
     transition: all 0.3s ease;
     justify-content: center;
     box-sizing: border-box;
@@ -57,7 +57,7 @@ body {
 
 .button-container > div:not(#navigate) {
     width: 100%;
-    height: 50%;
+    height: 30%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -68,7 +68,7 @@ body {
 #start,
 #navigate {
     width: 100%;
-    height: 50%;
+    height: 70%;
     border-radius: 14px;
     border: none;
     color: rgb(54, 54, 54);
@@ -82,28 +82,36 @@ body {
     box-sizing: border-box;
 }
 
+#find-restaurants:enabled,
+#start:enabled,
+#navigate:enabled {
+    cursor: pointer;
+}
+
 #find-restaurants {
     background-color: rgb(255, 217, 0);
+    color: rgb(54, 54, 54);
 }
 
-#find-restaurants:hover:enabled {
-    background-color: rgb(255, 227, 65);
-}
-
+#find-restaurants:disabled,
 #find-restaurants.disabled {
-    background-color: rgb(170, 170, 170);
+    background-color: #aaaaaa !important;
+    color: #fff;
     cursor: not-allowed;
     opacity: 0.7;
-    pointer-events: none;
 }
 
 #start {
     background-color: rgb(255, 77, 77);
+    color: #fff;
 }
 
-#start:disabled {
-    background-color: #aaaaaa;
+#start:disabled,
+#start.disabled {
+    background-color: #aaaaaa !important;
+    color: #fff;
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
 #start:hover:enabled {
@@ -112,12 +120,15 @@ body {
 
 #navigate {
     background-color: #47cc12;
-    height: 100%;
+    color: #fff;
 }
 
-#navigate:disabled {
-    background-color: #aaaaaa;
+#navigate:disabled,
+#navigate.disabled {
+    background-color: #aaaaaa !important;
+    color: #fff;
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
 #navigate:hover:enabled {
@@ -183,6 +194,7 @@ body {
     min-height: 28px;
     height: 100%;
     box-sizing: border-box;
+    cursor: default !important;
 }
 
 /* 반응형 스타일 */

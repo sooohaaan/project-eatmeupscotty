@@ -78,7 +78,6 @@ function initTickets() {
     }
     updateTicketDisplay();
     startButton.disabled = true; // 초기 상태를 비활성화로 설정
-    startButton.style.backgroundColor = '#aaa';
 }
 
 function updateTicketDisplay() {
@@ -92,21 +91,32 @@ function updateTicketDisplay() {
     // tickets가 0 이하일 때는 항상 비활성화
     if (tickets <= 0) {
         startButton.disabled = true;
-        startButton.style.backgroundColor = '#aaa';
     }
     // tickets가 0보다 크더라도 기본적으로는 비활성화 상태 유지
     // success 함수에서 식당 정보를 성공적으로 불러왔을 때만 활성화
-    else {
-        startButton.disabled = true;
-        startButton.style.backgroundColor = '#aaa';
-    }
 }
 
 function updateStartButtonState() {
+    // 인라인 스타일 초기화 (혹시 남아있을 수 있는 인라인 스타일 제거)
+    startButton.style.backgroundColor = '';
+    startButton.style.color = '';
+    startButton.style.opacity = '';
+    startButton.style.cursor = '';
+    navigateBtn.style.backgroundColor = '';
+    navigateBtn.style.color = '';
+    navigateBtn.style.opacity = '';
+    navigateBtn.style.cursor = '';
+
     if (tickets > 0 && menuItems && menuItems.length > 0 && !isSpinning) {
         startButton.disabled = false;
+        startButton.classList.remove('disabled');
+        navigateBtn.disabled = false;
+        navigateBtn.classList.remove('disabled');
     } else {
         startButton.disabled = true;
+        startButton.classList.add('disabled');
+        navigateBtn.disabled = true;
+        navigateBtn.classList.add('disabled');
     }
 }
 
@@ -132,8 +142,8 @@ function createRoulette() {
         path.setAttribute('d',
             `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc} 1 ${x2},${y2} Z`
         );
-        path.setAttribute('fill', i % 2 === 0 ? '#f5f5f7' : '#f0f0f0');
-        path.setAttribute('stroke', '#d6d6d680');
+        path.setAttribute('fill', i % 2 === 0 ? '#fefefe' : '#f0f0f0');
+        path.setAttribute('stroke', '#ddd');
         path.setAttribute('stroke-width', '1');
         svg.appendChild(path);
 
@@ -150,12 +160,30 @@ function createRoulette() {
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('font-size', '12');
         text.setAttribute('font-weight', 'bold');
-        text.setAttribute('fill', 'rgb(54, 54, 54)');
+        text.setAttribute('fill', '#363636');
         text.setAttribute('class', 'roulette-label');
         text.setAttribute('transform', `rotate(${textAngle},${tx},${ty})`);
         text.textContent = item;
         svg.appendChild(text);
     });
+
+    // 정가운데 6px 검은색 원 추가
+    const centerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    centerCircle.setAttribute('cx', cx);
+    centerCircle.setAttribute('cy', cy);
+    centerCircle.setAttribute('r', 14); // 반지름 3px → 지름 6px
+    centerCircle.setAttribute('fill', '#aaaaaa');
+    svg.appendChild(centerCircle);
+
+    // 외곽 1px 검은색 원 추가
+    const borderCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    borderCircle.setAttribute('cx', cx);
+    borderCircle.setAttribute('cy', cy);
+    borderCircle.setAttribute('r', r);
+    borderCircle.setAttribute('fill', 'none');
+    borderCircle.setAttribute('stroke', '#363636');
+    borderCircle.setAttribute('stroke-width', '1');
+    svg.appendChild(borderCircle);
 }
 
 function playTick() {
@@ -225,7 +253,6 @@ function spinRoulette() {
         
         // 식당이 선택되면 navigate 버튼 활성화
         navigateBtn.disabled = false;
-        navigateBtn.style.backgroundColor = '#47cc12';
     }, 4000);
 }
 
@@ -243,7 +270,6 @@ let currentLng = null; // 현재 경도
 
 // navigate 버튼 초기 상태 설정
 navigateBtn.disabled = true;
-navigateBtn.style.backgroundColor = '#aaa';
 
 countdownElement.textContent = '5'; // 페이지 로드 시 기본값 설정
 
