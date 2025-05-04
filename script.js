@@ -531,6 +531,12 @@ navigateBtn.addEventListener('click', function() {
 });
 
 window.kakaoMapAppInit = function() {
+    try {
+        ps = new kakao.maps.services.Places();
+        console.log('Places service initialized (AppInit)');
+    } catch (error) {
+        console.error('Failed to initialize Places service in AppInit:', error);
+    }
     createRoulette();
     initTickets();
     // 기타 필요한 초기화 코드가 있다면 여기에 추가
