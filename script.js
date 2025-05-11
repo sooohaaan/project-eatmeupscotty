@@ -158,22 +158,55 @@ function createRoulette() {
         text.setAttribute('y', ty);
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
-        text.setAttribute('font-size', '12');
+        text.setAttribute('font-size', '11');
         text.setAttribute('font-weight', 'bold');
         text.setAttribute('fill', '#363636');
         text.setAttribute('class', 'roulette-label');
+        
+        // 텍스트 길이 제한 및 줄바꿈 설정
+        const textPathLength = r * 0.6;
+        text.setAttribute('textLength', textPathLength);
+        text.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+        
+        // 긴 텍스트의 경우 줄바꿈 처리
+        if (item && item.length > 10) {
+            // 첫번째 줄 (앞부분)
+            const tspan1 = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+            tspan1.setAttribute('x', tx);
+            tspan1.setAttribute('dy', '-0.6em');
+            tspan1.textContent = item.substring(0, 10);
+            text.appendChild(tspan1);
+            
+            // 두번째 줄 (뒷부분)
+            const tspan2 = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+            tspan2.setAttribute('x', tx);
+            tspan2.setAttribute('dy', '1.2em');
+            tspan2.textContent = item.substring(10);
+            text.appendChild(tspan2);
+        } else {
+            // 짧은 텍스트는 그대로 표시
+            text.textContent = item;
+        }
+        
         text.setAttribute('transform', `rotate(${textAngle},${tx},${ty})`);
-        text.textContent = item;
         svg.appendChild(text);
     });
 
-    // 정가운데 6px 검은색 원 추가
+    // 정가운데 회색 원 추가
     const centerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     centerCircle.setAttribute('cx', cx);
     centerCircle.setAttribute('cy', cy);
-    centerCircle.setAttribute('r', 14); // 반지름 3px → 지름 6px
+    centerCircle.setAttribute('r', 24);
     centerCircle.setAttribute('fill', '#aaaaaa');
     svg.appendChild(centerCircle);
+    
+    // 정가운데 작은 검은색 원 추가
+    const centerDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    centerDot.setAttribute('cx', cx);
+    centerDot.setAttribute('cy', cy);
+    centerDot.setAttribute('r', 4);
+    centerDot.setAttribute('fill', '#000000');
+    svg.appendChild(centerDot);
 
     // 외곽 1px 검은색 원 추가
     const borderCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');

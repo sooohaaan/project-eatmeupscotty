@@ -23,33 +23,33 @@
     </script>
 </head>
 <body>
-    <div style="width: 100%; text-align: center; font-size: 32px; font-weight: bold; margin-top: 10px; margin-bottom: 10px; color: #1d1d1f;">Eat me up, Scotty!</div>
+    <div id="title">Eat me up, Scotty!</div>
     <div class="result-wrapper">
         <div id="result"></div>
     </div>
     <div id="roulette-menu" style="display:none"></div>
-    <div class="roulette-container" style="position: relative;">
-        <svg id="arrow" width="30" height="30" style="position: absolute; left: 50%; top: 0px; transform: translateX(-50%); z-index: 2;" viewBox="0 0 30 30">
-            <polygon points="15,30 25,10 5,10" fill="rgb(54, 54, 54);" stroke="rgba(214, 214, 214, 0.5);" stroke-width="1"/>
+    <div class="roulette-container">
+        <svg id="arrow" width="20" height="20" style="position: absolute; left: 50%; top: 3px; transform: translateX(-50%); z-index: 2;" viewBox="0 0 30 30">
+            <polygon points="15,30 25,10 5,10" fill="rgb(54, 54, 54)" stroke="rgba(214, 214, 214, 0.5)" stroke-width="1"/>
         </svg>
         <svg id="roulette" width="320" height="320" viewBox="0 0 320 320"></svg>
     </div>
     <div class="buttons-wrapper">
         <div class="button-container">
-            <div class="countdown-container">
+            <div class="view-common">
                 <div id="countdown"></div>
             </div>
             <button id="find-restaurants">음식점 불러오기</button>
         </div>
         <div class="button-container">
-            <div class="tickets-container">
+            <div class="view-common">
                 <div id="tickets"></div>
                 <div id="total-tickets"></div>
             </div>
             <button id="start">START</button>
         </div>
         <div class="button-container">
-            <div id="navigate-container"></div>
+            <div class="view-common"></div>
             <button id="navigate">GO!</button>
         </div>
     </div>
